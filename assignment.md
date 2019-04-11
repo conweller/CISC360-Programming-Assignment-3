@@ -128,54 +128,57 @@ things work.
     *   **<** - redirect standard input of command on left to come from file on
         the right (i.e. command < file).
 
-    To do the file redirection requires that you understand file descriptors
-    well and how a child process inherits file descriptors from its parent. You
-    will need to close and reopen file descriptors 0, 1, and 2\. For this you
-    will need to use the `open()`, `close()` and `dup()` system calls. (Refer
-    to Section 3.12 of Stevens and Rago's APUE book for dectails of `dup()`.)
-    Please use `dup(2)` instead of `dup2(2)`. The new file descriptor returned
-    by `dup(2)` is guaranteed to be the lowest-numbered available file
-    descriptor. This doesn't require a lot of code, just the right calls in the
-    right places. To get the normal function of stdin, stdout and stderr back,
-    opening of `/dev/tty` will be required. Be sure to use the right options
-    for `open()` in each situation (i.e. read/write, truncate/append). Read man
-    pages!
+To do the file redirection requires that you understand file descriptors
+well and how a child process inherits file descriptors from its parent. You
+will need to close and reopen file descriptors 0, 1, and 2\. For this you
+will need to use the `open()`, `close()` and `dup()` system calls. (Refer
+to Section 3.12 of Stevens and Rago's APUE book for dectails of `dup()`.)
+Please use `dup(2)` instead of `dup2(2)`. The new file descriptor returned
+by `dup(2)` is guaranteed to be the lowest-numbered available file
+descriptor. This doesn't require a lot of code, just the right calls in the
+right places. To get the normal function of stdin, stdout and stderr back,
+opening of `/dev/tty` will be required. Be sure to use the right options
+for `open()` in each situation (i.e. read/write, truncate/append). Read man
+pages!
 
-    To help out in testing both stdoue and stderr, there is a small program
-    [here](./test-1+2.c). Compile as test-1+2 and use it in test runs.  Code
-    example to redirect stdout to a file:
+To help out in testing both stdoue and stderr, there is a small program
+[here](./test-1+2.c). Compile as test-1+2 and use it in test runs.  Code
+example to redirect stdout to a file:
 
-       fid = open(filename, O_WRONLY|O_CREAT|O_TRUNC);  close(1);
-    dup(fid);  close(fid);  
+```
+fid = open(filename, O_WRONLY|O_CREAT|O_TRUNC);
+close(1);
+dup(fid);
+close(fid);
+```
+To redirect stdout back to the screen, replace the `open()` with:
 
-    To redirect stdout back to the screen, replace the `open()` with:
+`fid = open("/dev/tty", O_WRONLY);`
 
-       fid = open("/dev/tty", O_WRONLY);  
+and repeat the other 3 calls.
 
-    and repeat the other 3 calls.
-
-    Additionally, add a **noclobber** command which will affect how these
-    operators handle file creation. All it should do is change a variable
-    ([tcsh shell
-    variables](http://www.ibm.com/developerworks/aix/library/au-tcsh/)),
-    `noclobber` (prevent accidental overwriting of existing files), from 0 to 1
-    or from 1 to 0 and print out the new value of it. This variable should
-    default to 0 and cause your shell to act the same way as csh/tcsh does with
-    respect to the `noclobber` variable. That is when it is 0, > and >& will
-    overwrite existing files and >> and >>& will create the file if it doesn't
-    exist. When `noclobber` is 1 the shell should refuse to overwrite existing
-    files, refuse to create a file for appending and print the same error
-    messages csh/tcsh do in those situations.  
-
-    [cisc361:/usa/cshen/public_html/361/Proj_3 216] tcsh cisc361[31]
-    [~/public_html/361/Proj_3/]> touch out-file cisc361[32]
-    [~/public_html/361/Proj_3/]> set noclobber cisc361[33]
-    [~/public_html/361/Proj_3/]> echo hello > out-file out-file: File exists.
-    cisc361[34] [~/public_html/361/Proj_3/]> unset noclobber cisc361[35]
-    [~/public_html/361/Proj_3/]> echo hello > out-file cisc361[36]
-    [~/public_html/361/Proj_3/]> more out-file hello cisc361[37]
-    [~/public_html/361/Proj_3/]> 
-
+Additionally, add a **noclobber** command which will affect how these
+operators handle file creation. All it should do is change a variable
+([tcsh shell
+variables](http://www.ibm.com/developerworks/aix/library/au-tcsh/)),
+`noclobber` (prevent accidental overwriting of existing files), from 0 to 1
+or from 1 to 0 and print out the new value of it. This variable should
+default to 0 and cause your shell to act the same way as csh/tcsh does with
+respect to the `noclobber` variable. That is when it is 0, > and >& will
+overwrite existing files and >> and >>& will create the file if it doesn't
+exist. When `noclobber` is 1 the shell should refuse to overwrite existing
+files, refuse to create a file for appending and print the same error
+messages csh/tcsh do in those situations.  
+```
+[cisc361:/usa/cshen/public_html/361/Proj_3 216] tcsh cisc361[31]
+[~/public_html/361/Proj_3/]> touch out-file cisc361[32]
+[~/public_html/361/Proj_3/]> set noclobber cisc361[33]
+[~/public_html/361/Proj_3/]> echo hello > out-file out-file: File exists.
+cisc361[34] [~/public_html/361/Proj_3/]> unset noclobber cisc361[35]
+[~/public_html/361/Proj_3/]> echo hello > out-file cisc361[36]
+[~/public_html/361/Proj_3/]> more out-file hello cisc361[37]
+[~/public_html/361/Proj_3/]> 
+```
 *   Add support for interprocess communication (IPC). This is adding support
     for **|** and **|&**. The | operator should pipe standard output of the
     command on the left to standard input of the command on the right. (i.e.
@@ -237,39 +240,79 @@ of times. Also test for turning off watching a file. And to test watchuser,
 come up with your own tests. The TAs will test each feature.
 
 Test your shell by running the following commands in it (in order):
+```
+pwd
+ls &
+ls -l &
+cd /
+sleep 20 &
+ls & 			; run before sleep is done
+pid
+tty
+/bin/ps -lfu USERNAME	; replace USERNAME with your own  
+cd
+cd [project test dir of your choosing]
+pwd
+ls -l
+rm -f mail1 mail2
+touch mail1			; create this file
+watchmail mail1
+echo hi >> mail1
+echo HiThere > mail2	; create another file
+watchmail mail2
+echo there >> mail1
+echo Subject: >> mail2
+cat mail1
+cat mail2
+watchmail mail1 off
+echo bye >> mail1
+echo bye >> mail2		; still watching this one
 
-pwd  ls &  ls -l &  cd /  sleep 20 &  ls & 			; run before
-sleep is done  pid  tty  /bin/ps -lfu USERNAME	; replace USERNAME with your
-own    cd  cd [project test dir of your choosing]  pwd  ls -l  rm -f mail1
-mail2  touch mail1			; create this file  watchmail mail1  echo hi >>
-mail1  echo HiThere > mail2	; create another file  watchmail mail2  echo there
->> mail1  echo Subject: >> mail2  cat mail1  cat mail2  watchmail mail1 off
-echo bye >> mail1  echo bye >> mail2		; still watching this one  
+rm -f test1 test2 test3 test4 test5 test6 test7 test8
+test-1+2 > test1
+test-1+2 >> test2
+test-1+2 >& test3
+test-1+2 >>& test4
+cat test1 test2 test3 test4
+test-1+2 > test1
+test-1+2 >> test2
+test-1+2 >& test3
+test-1+2 >>& test4
+cat test1 test2 test3 test4
 
-    rm -f test1 test2 test3 test4 test5 test6 test7 test8  test-1+2 > test1
-    test-1+2 >> test2  test-1+2 >& test3  test-1+2 >>& test4  cat test1 test2
-    test3 test4  test-1+2 > test1  test-1+2 >> test2  test-1+2 >& test3
-    test-1+2 >>& test4  cat test1 test2 test3 test4  
+noclobber				; turn noclobber on
+test-1+2 > test5
+test-1+2 >> test6
+test-1+2 >& test7
+test-1+2 >>& test8
+cat test5 test6 test7 test8
+test-1+2 > test5
+test-1+2 >> test6
+test-1+2 >& test7
+test-1+2 >>& test8
+cat test5 test6 test7 test8
 
-    noclobber				; turn noclobber on  test-1+2 > test5  test-1+2 >>
-    test6  test-1+2 >& test7  test-1+2 >>& test8  cat test5 test6 test7 test8
-    test-1+2 > test5  test-1+2 >> test6  test-1+2 >& test7  test-1+2 >>& test8
-    cat test5 test6 test7 test8  
+grep hello < test8
+grep error < test8
 
-    grep hello < test8  grep error < test8  
+rm -f test9 test10 test11 test12
+noclobber				; turn noclobber off
+test-1+2 > test9
+test-1+2 >> test10
+test-1+2 >& test11
+test-1+2 >>& test12
+cat test9 test10 test11 test12
 
-    rm -f test9 test10 test11 test12  noclobber				; turn noclobber
-    off  test-1+2 > test9  test-1+2 >> test10  test-1+2 >& test11  test-1+2 >>&
-    test12  cat test9 test10 test11 test12  
+ls | fgrep .c                   ; show pipes works
+./test-1+2 | grep  hello
+./test-1+2 |& grep hello
+./test-1+2 | grep output
+./test-1+2 |& grep output
+./test-1+2 |& grep error
 
-    ls | fgrep .c                   ; show pipes works  ./test-1+2 | grep
-    hello  ./test-1+2 |& grep hello  ./test-1+2 | grep output  ./test-1+2 |&
-    grep output  ./test-1+2 |& grep error  
-
-    pid                                        ; zombie avoidance checking
-    /bin/ps -lfu USERNAME | grep defunct       ; replace USERNAME with your
-    username  
-
+pid                                        ; zombie avoidance checking
+/bin/ps -lfu USERNAME | grep defunct       ; replace USERNAME with your username
+```
 If your file redirection doesn't work then use another shell to modify your
 mailfiles to test your watchmail command. The TA will also test each feature.
 
@@ -299,6 +342,7 @@ YourLoginName_3
 To verify that your files are in the tar file take a look at the table of
 contents of the tar file like:
 
+```
 tar tvf YourLoginName_3.tar
-
+```
 Then submit your tar file to Canvas.
