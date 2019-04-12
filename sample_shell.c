@@ -24,8 +24,6 @@ struct path_node *path;
 // * comments
 // * prompt
 
-char **glob_string(char *command, char *input, int *size);
-char **glob_argv(char **argv, int *argc);
 char *which(char **args, int nargs, struct path_node *env_path);
 void where(char **args, int nargs, struct path_node *env_path);
 
@@ -100,18 +98,6 @@ label:
         }
 
         get_argv(buf);
-        if (nargs == 2) {
-            if (strstr(args[1], "*") != NULL) {
-                int old_nargs = nargs;
-                char **tmp = glob_string(args[0], args[1], &nargs);
-                for (int i = 0; i < old_nargs; i++) {
-                    free(args[i]);
-                }
-                printf("%d\n", nargs);
-                free(args);
-                args = tmp;
-            }
-        }
 
         if (strcmp(args[0], "pwd") == 0) { /* built-in command pwd */
             ptr = getcwd(NULL, 0);
