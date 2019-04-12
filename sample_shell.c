@@ -7,7 +7,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
+#define _XOPEN_SOURCE 500
 #define MAXLINE 128
 
 extern char **environ;
@@ -20,6 +20,7 @@ char *ptr;
 char *prompt;
 struct path_node *path;
 
+int sigignore(int sig);
 
 char *which(char **args, int nargs, struct path_node *env_path);
 void where(char **args, int nargs, struct path_node *env_path);

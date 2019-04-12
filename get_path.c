@@ -3,8 +3,8 @@
  *                                                      *
  * Author:  Connor, Onweller                            *
  *                                                      *
- * Purpose: Houses function to store environment        *
- *            In a linked list                          *
+ * Purpose: Implements function to store environment    *
+ *            in a linked list and free list            *
  ********************************************************/
 
 #include "get_path.h"
@@ -30,7 +30,6 @@ struct path_node *get_path() {
     free(p);
     return NULL;
   }
-
   path = malloc((strlen(p) + 1) * sizeof(char));
   strcpy(path, p);
   path[strlen(p)] = '\0';
