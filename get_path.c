@@ -12,7 +12,9 @@
 /*
  *  Function: get_path
  *  ------------------
- *    Gets path string using getenv
+ *    Gets path string using getenv, parses through string and adds each
+ *      of the path to a linked list (path_node struct), and then returns that
+ *      list
  *
  *    returns: the environment path as a path_node struct
  *    (linked list)
