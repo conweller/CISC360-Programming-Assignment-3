@@ -2,7 +2,7 @@
 The main objective of this assignment is to adding more functionalities to your
 shell from Project 2.
 
-# TODO
+## TODO
 * [ ] background a 'job' using `&`
     * [ ] Extra Credit (10 points): Implement the `fg` built-in command
 * [ ] `watchuser`
@@ -14,8 +14,8 @@ shell from Project 2.
 * [ ] `noclobber`
 * [ ] interprocess communication 
 
-# Commenting Style Examples:
-## File Headers:
+## Commenting Style Examples:
+### File Headers:
 ```
 /********************************************************
  * get_path.h                                           *
@@ -26,7 +26,7 @@ shell from Project 2.
  *            from a string                             *
  ********************************************************/
  ```
-## Functions:
+### Functions:
 ```
 /*
  *  Function: get_argv
@@ -39,7 +39,7 @@ shell from Project 2.
  *    returns: the list of arguments contained within the input buffer
  */
 ```
-## Structures:
+### Structures:
 ```
 /*
  *  Structure: list_node
