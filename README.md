@@ -1,10 +1,7 @@
 # Programming Assignment 3
 The main objective of this assignment is to adding more functionalities to your
-shell from Project 2.  The assignment introduces programming with POSIX threads
-(pthreads), including mutual exclusion with pthreads. Experience with some more
-system calls and C library functions will also be done to hone your programming
-skills. Reading of man pages will also be a must to do well. 
----
+shell from Project 2.
+
 # TODO
 * [ ] background a 'job' using `&`
     * [ ] Extra Credit (10 points): Implement the `fg` built-in command
@@ -17,7 +14,6 @@ skills. Reading of man pages will also be a must to do well.
 * [ ] `noclobber`
 * [ ] interprocess communication 
 
----
 # Commenting Style Examples:
 ## File Headers:
 ```
