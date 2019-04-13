@@ -1,4 +1,5 @@
 #include "get_path.h"
+#include "get_arg.h"
 #include "list.h"
 #include <signal.h>
 #include <stdio.h>
@@ -6,7 +7,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
+#define _XOPEN_SOURCE 500
 #define MAXLINE 128
 
 extern char **environ;
@@ -19,44 +20,11 @@ char *ptr;
 char *prompt;
 struct path_node *path;
 
-// TODO:
-// * error checking
-// * comments
-// * prompt
+int sigignore(int sig);
 
-char **glob_string(char *command, char *input, int *size);
-char **glob_argv(char **argv, int *argc);
 char *which(char **args, int nargs, struct path_node *env_path);
 void where(char **args, int nargs, struct path_node *env_path);
 
-// Get the argv from user input
-void get_argv(char *a) {        // Get the inputted arguments
-    // Malloc extra spot for null array
-    args = malloc((nargs + 1) * sizeof(char *));
-    char *cur_string = strtok(buf, " \n");
-    int i = 0;
-    while (cur_string != NULL && i < nargs) {
-        /* printf("yo\n"); */
-        args[i] = malloc(sizeof(char *) * (strlen(cur_string) + 1));
-        strcpy(args[i], cur_string);
-        cur_string = strtok(NULL, " ");
-        i++;
-    }
-    if (args[nargs - 1][strlen(args[nargs - 1]) - 1] == '\n')
-        args[nargs - 1][strlen(args[nargs - 1]) - 1] = '\0';
-    args[nargs] = NULL;
-}
-
-void get_argc(char *a) {        // Get the number of arguments
-    nargs = 0;
-    if (strlen(a) > 0) {
-        if (a[0] != ' ' && a[0] != '\n')
-            nargs++;
-        for (int i = 0; a[i] != '\0' && a[i]; i++)
-            if (i != 0 && i + 1 != strlen(a) - 1 && a[i] == ' ' && (a[i + 1] != ' '))
-                nargs++;
-    }
-}
 
 void handle_sigint(int sig) {   // Catch SIGTERM and SIGTSTP
     sigignore(SIGTERM);
@@ -64,17 +32,6 @@ void handle_sigint(int sig) {   // Catch SIGTERM and SIGTSTP
 }
 void termsig(int sig) {}        // Catch termsig as parent but not child
 
-int check_for_EOF() {
-    if (feof(stdin))
-        return 1;
-    int c = getc(stdin);
-    if (c == EOF) {
-        ungetc(c, stdin);
-        return 1;
-    }
-
-    return 0;
-}
 int main(void) {
     signal(SIGINT, termsig);
     signal(SIGTERM, handle_sigint);
@@ -93,32 +50,19 @@ int main(void) {
 label:
     while (fgets(buf, MAXLINE, stdin) != NULL) {
         // Use buf to get argc and argv (called args and nargs respectively)
-        get_argc(buf);
+        nargs = get_argc(buf);
         if (nargs == 0) {
             printf("%s%s> ", prompt_pref, prompt);
             break;
         }
 
-        get_argv(buf);
-        if (nargs == 2) {
-            if (strstr(args[1], "*") != NULL) {
-                int old_nargs = nargs;
-                char **tmp = glob_string(args[0], args[1], &nargs);
-                for (int i = 0; i < old_nargs; i++) {
-                    free(args[i]);
-                }
-                printf("%d\n", nargs);
-                free(args);
-                args = tmp;
-            }
-        }
+        args = get_argv(buf, nargs);
 
         if (strcmp(args[0], "pwd") == 0) { /* built-in command pwd */
             ptr = getcwd(NULL, 0);
             printf("CWD = [%s]\n", ptr);
             free(ptr);
         } else if (strcmp(args[0], "prompt") == 0) { /* built-in command pwd */
-            // TODO add prefix, need to free prompt_pref
 
             if (nargs == 1) {
                 printf("enter new prompt prefix\n");
@@ -152,17 +96,8 @@ label:
                 free(sig);
             }
         } else if (strcmp(args[0], "list") == 0) {      // built in list function
-            /* print_list(args,nargs); */
-            struct list_node **l = list(args, nargs);   // Calls function that
-            int i = 0;                                  // creates list of files
-            while (l[i] != NULL) {                      // in a directory.
-                print_list(l[i]);                       // Calls function that
-                free_list(l[i]);                        // iterates through list.
-                i++;
-            }
-            free(l);
+          print_lists(nargs, args);
         } else if (strcmp(args[0], "cd") == 0) {
-
             if (nargs == 1) {                           // cd home
                 free(prev_dir);
                 prev_dir = getcwd(NULL, 0);
@@ -190,7 +125,6 @@ label:
             } else if (nargs == 2) {
                 char * env_var = getenv(args[1]);
                 printf("%s\n", env_var);
-                /* free(env_var); */
             }
         } else if (strcmp(args[0], "setenv") == 0){
             if (nargs == 1) {
@@ -212,7 +146,6 @@ label:
                 free_path(path);
                 path = get_path();
             }
-
         } else if (strcmp(args[0], "pid") == 0) {
             printf("PID = %d\n", getpid());
         } else if (strcmp(args[0], "which") == 0) { // call which from which.c
