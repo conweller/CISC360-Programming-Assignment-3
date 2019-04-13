@@ -3,7 +3,7 @@ The main objective of this assignment is to adding more functionalities to your
 shell from Project 2.
 
 ## TODO
-* [ ] background a 'job' using `&`
+* [x] background a 'job' using `&`
     * [ ] Extra Credit (10 points): Implement the `fg` built-in command
 * [ ] `watchuser`
     * [ ] Extra Credit (5 points): Also have your thread notify when the users
