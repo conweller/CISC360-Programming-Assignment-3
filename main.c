@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <errno.h>
 #define _XOPEN_SOURCE 500
 #define MAXLINE 128
 
@@ -20,35 +21,37 @@ char *prompt;
 struct path_node *path;
 
 int sigignore(int sig);
-
+void handle_sigchld(int sig) {
+  int saved_errno = errno;
+  errno = saved_errno;
+}
 void handle_sigint(int sig) { // Catch SIGTERM and SIGTSTP
   sigignore(SIGTERM);
   sigignore(SIGTSTP);
 }
 void termsig(int sig) {} // Catch termsig as parent but not child
-
+int bg_running = 0;
 int main(void) {
   signal(SIGINT, termsig);
   signal(SIGTERM, handle_sigint);
   signal(SIGTSTP, handle_sigint);
+
   path = get_path();
   prompt = getcwd(NULL, 0);
   // Allocating the prompt prefix makes frees easier later on
 
   // We need to store the starting directory for cd - command
   printf("%s> ", prompt);
-
   // Jump back here if we recieve a ^D
 label:
   while (fgets(buf, MAXLINE, stdin) != NULL) {
-    // Use buf to get argc and argv (called args and nargs respectively)
+    while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {} //check if bg have terminated
     nargs = get_argc(buf);
     if (nargs == 0) {
       printf("%s> ", prompt);
       break;
     }
 
-    waitpid(0, &status, WNOHANG); // check for finished bg processes
     args = get_argv(buf, nargs);
 
     if (strcmp(args[0], "pwd") == 0) { /* built-in command pwd */
@@ -88,6 +91,7 @@ label:
     } else if (strlen(args[0]) != 0) { // else try to execute external command
       char bg = 0;
       if (args[nargs-1][0] == '&'){ // if last arg is &
+
         bg = 1;             // mark as a background process
         free(args[nargs-1]); // reduce the numbber of arguments
         free(args[nargs]);
