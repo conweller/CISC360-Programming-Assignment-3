@@ -63,7 +63,6 @@ label:
             printf("CWD = [%s]\n", ptr);
             free(ptr);
         } else if (strcmp(args[0], "prompt") == 0) { /* built-in command pwd */
-            // TODO add prefix, need to free prompt_pref
 
             if (nargs == 1) {
                 printf("enter new prompt prefix\n");
