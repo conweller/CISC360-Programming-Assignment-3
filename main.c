@@ -1,5 +1,6 @@
 #include "get_arg.h"
 #include "get_path.h"
+#include "watch.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,7 +85,13 @@ label:
       }
       free(args);
       exit(0);
-    } else if (strlen(args[0]) != 0) { // else try to execute external command
+    } else if (strcmp(args[0], "watchuser") == 0) {
+		printf("Executing built-in command watchuser\n");
+		watchuser("yeet",0);
+  	} else if (strcmp(args[0], "watchmail") == 0) {
+		printf("Executing built-in command watchmail\n");
+		watchmail("filename");
+	} else if (strlen(args[0]) != 0) { // else try to execute external command
       if ((pid = fork()) < 0) {
         printf("fork error\n");
         exit(1);
