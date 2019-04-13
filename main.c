@@ -48,6 +48,7 @@ label:
       break;
     }
 
+    waitpid(0, &status, WNOHANG); 
     args = get_argv(buf, nargs);
 
     if (strcmp(args[0], "pwd") == 0) { /* built-in command pwd */
@@ -85,15 +86,25 @@ label:
       free(args);
       exit(0);
     } else if (strlen(args[0]) != 0) { // else try to execute external command
+      char bg = 0;
+      if (args[nargs-1][0] == '&'){ // if last arg is &
+        bg = 1;
+        free(args[nargs-1]);
+        free(args[nargs]);
+        args[nargs-1] = NULL;
+        nargs --;
+      }
       if ((pid = fork()) < 0) {
         printf("fork error\n");
         exit(1);
       } else if (pid == 0) { /* child */
+        if (bg)
+          setpgid(0, 0); 
         execvp(args[0], args);
         printf("couldn't execute: %s\n", args[0]);
         exit(127);
       }
-      if ((pid = waitpid(pid, &status, 0)) < 0)
+      if (!bg && (pid = waitpid(pid, &status, 0)) < 0)
         printf("waitpid error\n");
     }
     for (int i = 0; i < nargs; i++) {
