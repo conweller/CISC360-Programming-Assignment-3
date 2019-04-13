@@ -12,7 +12,7 @@ void err_sys(const char* x) {
 	perror(x);
 	exit(1);
 }
-struct list_node * list_one_dir(char ** argv, int  argc) {
+struct list_node * list_one_dir(int  argc, char ** argv) {
 	DIR				*dp;
 	struct dirent	*dirp;
 	struct list_node * result =NULL;
@@ -51,7 +51,7 @@ struct list_node * list_one_dir(char ** argv, int  argc) {
 	closedir(dp);
 	return result;
 }
-struct list_node ** list(char ** argv, int  argc) {
+struct list_node ** list(int  argc, char ** argv) {
 	struct list_node ** result = NULL;
 	char ** new_argv= NULL;
 	if (argc == 1){
@@ -60,7 +60,7 @@ struct list_node ** list(char ** argv, int  argc) {
 		new_argv[1] = ".";
 		new_argv[2] = NULL;
 		result = malloc(sizeof (struct list_node*) * 2);
-		result[0] = list_one_dir(new_argv, 2);
+		result[0] = list_one_dir(2, new_argv);
 		result[1] = NULL;
 		free(new_argv);
 	} 
@@ -73,7 +73,7 @@ struct list_node ** list(char ** argv, int  argc) {
 			strcpy(new_argv[1], argv[i]);
 			new_argv[2] = NULL;
 			/* list_one_dir(new_argv, 2); */
-			result[i-1] = list_one_dir(new_argv, 2);
+			result[i-1] = list_one_dir(2, new_argv);
 			/* if ((asprintf(&result, "%s%s", result, list_one_dir(new_argv, 2)))==-1) */
 			/* 	err_sys("asprintf error"); */
 			free(new_argv[1]);
@@ -104,4 +104,15 @@ void print_list(struct list_node * list) {
 		tmp = tmp->next;
 	}
 	printf("\n");
+}
+
+void print_lists (int argc, char ** argv) {
+  struct list_node **l = list(argc, argv);   // Calls function that
+  int i = 0;                                  // creates list of files
+  while (l[i] != NULL) {                      // in a directory.
+    print_list(l[i]);                       // Calls function that
+    free_list(l[i]);                        // iterates through list.
+    i++;
+  }
+  free(l);
 }

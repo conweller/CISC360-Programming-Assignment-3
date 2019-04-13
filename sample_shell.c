@@ -97,17 +97,8 @@ label:
                 free(sig);
             }
         } else if (strcmp(args[0], "list") == 0) {      // built in list function
-            /* print_list(args,nargs); */
-            struct list_node **l = list(args, nargs);   // Calls function that
-            int i = 0;                                  // creates list of files
-            while (l[i] != NULL) {                      // in a directory.
-                print_list(l[i]);                       // Calls function that
-                free_list(l[i]);                        // iterates through list.
-                i++;
-            }
-            free(l);
+          print_lists(nargs, args);
         } else if (strcmp(args[0], "cd") == 0) {
-
             if (nargs == 1) {                           // cd home
                 free(prev_dir);
                 prev_dir = getcwd(NULL, 0);
@@ -135,7 +126,6 @@ label:
             } else if (nargs == 2) {
                 char * env_var = getenv(args[1]);
                 printf("%s\n", env_var);
-                /* free(env_var); */
             }
         } else if (strcmp(args[0], "setenv") == 0){
             if (nargs == 1) {
@@ -157,7 +147,6 @@ label:
                 free_path(path);
                 path = get_path();
             }
-
         } else if (strcmp(args[0], "pid") == 0) {
             printf("PID = %d\n", getpid());
         } else if (strcmp(args[0], "which") == 0) { // call which from which.c
