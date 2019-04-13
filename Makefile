@@ -1,8 +1,8 @@
-shell: sample_shell.o get_path.o list.o which.o get_arg.o
-	gcc -g sample_shell.o which.o list.o get_path.o get_arg.o -o shell
+shell: main.o get_path.o list.o which.o get_arg.o
+	gcc -g main.o which.o list.o get_path.o get_arg.o -o shell
 
-sample_shell.o: sample_shell.c
-	gcc -g -c sample_shell.c
+main.o: main.c
+	gcc -g -c main.c
 
 get_path.o: get_path.c
 	gcc -g -c get_path.c
