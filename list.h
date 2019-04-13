@@ -67,6 +67,15 @@ void print_list(struct list_node *list);
  */
 
 void print_lists(int argc, char **argv);
+
+/*
+ *  Function: Free list
+ *  --------------------
+ *    Frees a list_node struct
+ *
+ *    list: the list_node struct to be freed
+ */
+
 void free_list(struct list_node *list);
 
 /*
