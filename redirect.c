@@ -7,6 +7,8 @@
  * one command to a file                                *
  ********************************************************/
 
+#include "redirect.h"
+
 /*
  *  Function: redirect
  *  ------------------
@@ -22,5 +24,37 @@
  */
 
 void redirect(char ** cmd_argv, int cmd_argc, char* filename, int options) {
+  int fd[2];
+  pid_t pid;
+
+  if (pipe(fd) < 0) {
+    perror("pipe error");
+    exit(1);
+  } 
+
+  // Open file
+  
+  if ((pid = fork()) < 0) {
+    perror("fork error");
+    exit(0);
+  }
+
+
+
+  if (options & REDIR_ER) {
+    // Error
+  } else {
+    // No error
+  }
+  if (options & REDIR_OW) {
+    // Overwrite
+  } else {
+    // No Overwrite
+  }
+  if (options & REDIR_AP) {
+    // Append
+  } else {
+    // No Append
+  }
 
 }

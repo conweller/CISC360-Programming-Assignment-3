@@ -9,6 +9,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdio.h>
 
 const int REDIR_OW = 1;
 const int REDIR_ER = 2;
