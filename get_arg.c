@@ -1,7 +1,7 @@
 /********************************************************
  * get_path.c                                           *
  *                                                      *
- * Author:  Connor, Onweller                            *
+ * Author:  Connor Onweller                             *
  *                                                      *
  * Purpose: Implements methods to parse argv and argc   *
  *            from a string                             *

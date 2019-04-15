@@ -1,7 +1,7 @@
 /********************************************************
  * get_path.h                                           *
  *                                                      *
- * Author:  Connor, Onweller                            *
+ * Author:  Connor Onweller                             *
  *                                                      *
  * Purpose: Contains methods to parse argv and argc     *
  *            from a string                             *

@@ -46,6 +46,7 @@ int main(void) {
 label:
   while (fgets(buf, MAXLINE, stdin) != NULL) {
     while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {} //check if bg have terminated
+
     nargs = get_argc(buf);
     if (nargs == 0) {
       printf("%s> ", prompt);
