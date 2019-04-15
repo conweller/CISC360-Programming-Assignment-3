@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <utmpx.h>
 
 
 /********************************************************
@@ -14,6 +15,40 @@
  *                                                      *
  ********************************************************/
 
+struct Node {
+  char *name;
+  char **tty;
+  int size;
+  struct Node *next;
+};
+
+/*
+ *  Function: insert
+ *  ------------------
+ *    Returns void
+ *
+ *    name: username string
+ */
+struct Node *insert(char *name);
+
+/*
+ *  Function: delete
+ *  ------------------
+ *    Returns void
+ *
+ *    name: username string
+ */
+void delete(char *name);
+
+/*
+ *  Function: freeList
+ *  ------------------
+ *    Returns a
+ *
+ *    returns: void
+ */
+void freeList();
+
 /*
  *  Function: watchuser
  *  ------------------
@@ -21,11 +56,11 @@
  *
  *    user: username string
  *    off: int representing if 'off' is specified (1 for yes, 0 for no)
+ *    first: int representing if watchuser has been called yet (1 for yes, 0 for no)
  *
  *    returns: the list of arg
  */
-int watchuser(char *user, int off);
-
+int watchuser(char *user, int off, int first);
 
 /*
  *  Function: threaduser

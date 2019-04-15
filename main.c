@@ -39,6 +39,9 @@ int main(void) {
   // We need to store the starting directory for cd - command
   printf("%s> ", prompt);
 
+  //Boolean used by watchuser to tell it if it has been called yet by the shell
+	int first = 1;
+
   // Jump back here if we recieve a ^D
 label:
   while (fgets(buf, MAXLINE, stdin) != NULL) {
@@ -87,7 +90,27 @@ label:
       exit(0);
     } else if (strcmp(args[0], "watchuser") == 0) {
 		printf("Executing built-in command watchuser\n");
-		watchuser("yeet",0);
+		if (nargs ==  1) {
+			printf("Not enough arguments\n");
+		} else if (nargs == 2) {
+			printf("Searching for user\n");
+			if (first) {
+				watchuser(args[1],0,first);
+				first = 0;
+			} else {
+				watchuser(args[1],0,first);
+			}
+		} else if (nargs == 3) {
+			if (strcmp(args[2], "off") == 0) {
+				if (!first) {
+					watchuser(args[1],1,first);
+				}
+			} else {
+				printf("Invalid argument\n");
+			}
+		} else {
+			printf("Too many arguments\n");
+		}
   	} else if (strcmp(args[0], "watchmail") == 0) {
 		printf("Executing built-in command watchmail\n");
 		watchmail("filename");
