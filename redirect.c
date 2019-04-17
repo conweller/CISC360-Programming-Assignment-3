@@ -36,7 +36,7 @@ void change_output(char *dest, int to_close, int oflags) {
 
 void redirect(char **cmd_argv,  char *filename, int options) {
   pid_t pid;
-  int file_options = O_CREAT | O_RDWR;
+  int file_options = O_CREAT | O_RDWR ;
 
   if (options & REDIR_AP) 
     file_options |= O_APPEND;
@@ -44,6 +44,9 @@ void redirect(char **cmd_argv,  char *filename, int options) {
     char ans, c;
     printf("%s: File exits.\n", filename);
     return;
+  }
+  if (!access(filename, F_OK)){
+    file_options |= O_TRUNC;
   }
 
   if ((pid = fork()) < 0) {
@@ -55,9 +58,9 @@ void redirect(char **cmd_argv,  char *filename, int options) {
       exit(1);
     }
   } else if (pid == 0) {
+    change_output(filename, 1, file_options);
     if (options & REDIR_ER) 
       change_output(filename, 2, file_options);
-    change_output(filename, 1, file_options);
     execvp(cmd_argv[0], cmd_argv);
     exit(0);
   }
