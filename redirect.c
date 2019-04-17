@@ -9,6 +9,17 @@
 
 #include "redirect.h"
 
+int const REDIR_OW = 1;
+int const REDIR_ER = 2;
+int const REDIR_AP = 4;
+
+void change_output(char *dest, int to_close, int oflags) {
+  int fid = open(dest, oflags, 0666);
+  close(to_close);
+  dup(fid);
+  close(fid);
+}
+
 /*
  *  Function: redirect
  *  ------------------
@@ -23,38 +34,41 @@
  *        REDIR_AP: append to the file
  */
 
-void redirect(char ** cmd_argv, int cmd_argc, char* filename, int options) {
-  int fd[2];
+void redirect(char **cmd_argv, int cmd_argc, char *filename, int options) {
   pid_t pid;
+  int file_options = O_CREAT | O_RDWR;
 
-  if (pipe(fd) < 0) {
-    perror("pipe error");
-    exit(1);
-  } 
+  if (options & REDIR_AP) 
+    file_options |= O_APPEND;
+  if (!(options & REDIR_OW) && !access(filename, F_OK)) {
+    char ans, c;
+    printf("file exits, are you sure you want to continue?\n");
+    scanf("%c%c", &ans, &c);
+    if (ans == 'y')
+      printf("Overwrite or appending\n");
+    else {
+      printf("exiting\n");
+      return;
+    }
+  }
 
-  // Open file
-  
   if ((pid = fork()) < 0) {
     perror("fork error");
     exit(0);
+  } else if (pid > 0) {
+    if (waitpid(pid, NULL, 0) < 0) {
+      perror("waitpid error");
+      exit(1);
+    }
+  } else if (pid == 0) {
+    if (options & REDIR_ER) 
+      change_output(filename, 2, file_options);
+    change_output(filename, 1, file_options);
+    execvp(cmd_argv[0], cmd_argv);
+    exit(0);
   }
-
-
-
-  if (options & REDIR_ER) {
-    // Error
-  } else {
-    // No error
-  }
-  if (options & REDIR_OW) {
-    // Overwrite
-  } else {
-    // No Overwrite
-  }
-  if (options & REDIR_AP) {
-    // Append
-  } else {
-    // No Append
-  }
-
+  if (options & REDIR_ER) 
+    change_output("/dev/tty", 2, O_WRONLY);
+  change_output("/dev/tty", 1, O_WRONLY);
+  printf("and we back\n");
 }

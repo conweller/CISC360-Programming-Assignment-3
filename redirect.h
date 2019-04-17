@@ -11,10 +11,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-const int REDIR_OW = 1;
-const int REDIR_ER = 2;
-const int REDIR_AP = 4;
+extern const int REDIR_OW;
+extern const int REDIR_ER;
+extern const int REDIR_AP;
 
 /*
  *  Function: redirect

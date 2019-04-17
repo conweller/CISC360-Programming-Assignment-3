@@ -1,4 +1,5 @@
 #include "get_arg.h"
+#include "redirect.h"
 #include "get_path.h"
 #include <signal.h>
 #include <stdio.h>
@@ -29,6 +30,8 @@ void handle_sigint(int sig) { // Catch SIGTERM and SIGTSTP
   sigignore(SIGTERM);
   sigignore(SIGTSTP);
 }
+
+
 void termsig(int sig) {} // Catch termsig as parent but not child
 int bg_running = 0;
 int main(void) {
@@ -79,7 +82,14 @@ label:
       } else {                                    // normal cd
         chdir(args[1]);
       }
-    } else if (strcmp(args[0], "pid") == 0) {
+    }
+    else if (strcmp(args[0], "red") == 0) {
+      char ** cmd = malloc(2*sizeof (char*));
+      cmd[0] = "cp";
+      cmd[1] = ".";
+      redirect(cmd, 2, "test", REDIR_AP|REDIR_ER);
+    } 
+    else if (strcmp(args[0], "pid") == 0) {
       printf("PID = %d\n", getpid());
     } else if (strcmp(args[0], "exit") == 0) { // Free everything and exit
       free(prompt);
@@ -124,3 +134,6 @@ label:
   goto label;      // Reenter loop
   exit(0);
 }
+
+
+
