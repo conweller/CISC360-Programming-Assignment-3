@@ -5,12 +5,12 @@ shell from Project 2.
 ## TODO
 * [x] background a 'job' using `&`
     * [ ] Extra Credit (10 points): Implement the `fg` built-in command
-* [ ] `watchuser`
+* [x] `watchuser`
     * [ ] Extra Credit (5 points): Also have your thread notify when the users
       being watched log off of a tty. Make it clear that you do this if you do,
       and document it well.
 * [ ] `watchmail`
-* [ ] file redirections
+* [x] file redirections
 * [ ] `noclobber`
 * [ ] interprocess communication 
 
