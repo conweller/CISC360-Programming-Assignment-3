@@ -33,4 +33,4 @@ extern const int REDIR_AP;
  *        REDIR_AP: append to the file
  */
 
-void redirect(char ** cmd_argv, int cmd_argc, char* filename, int options);
+void redirect(char ** cmd_argv, char* filename, int options);

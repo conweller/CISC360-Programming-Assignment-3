@@ -19,6 +19,9 @@ pid_t pid;
 int status;
 char *ptr;
 char *prompt;
+char ** left;
+char ** right;
+char * op;
 struct path_node *path;
 
 int sigignore(int sig);
@@ -31,6 +34,77 @@ void handle_sigint(int sig) { // Catch SIGTERM and SIGTSTP
   sigignore(SIGTSTP);
 }
 
+int parse_for_op() {
+  int found = 0;
+  char * tmp = args[0];
+  op = malloc(sizeof(char*) *3 );
+  int index = 1;
+  while (tmp != NULL) {
+    if (strcmp(">", tmp) == 0) {
+      found = 1;
+      op = ">";
+      break;
+    }
+    if(strcmp(">>", tmp) == 0) {
+      found = 1;
+      op = ">>";
+      break;
+    }
+    if(strcmp(">&", tmp) == 0) {
+      found = 1;
+      op = ">&";
+      break;
+    }
+    if(strcmp(">>&", tmp) == 0) {
+      found = 1;
+      op = ">>&";
+      break;
+    }
+    if(strcmp("<", tmp) == 0) {
+      found = 1;
+      op = "<";
+      break;
+    }
+    if (strcmp("|", tmp) == 0) {
+      found = 1;
+      op = "|";
+      break;
+    }
+    if(strcmp("|&", tmp) == 0 ) {
+      found = 1;
+      op = "|&";
+      break;
+    }
+    tmp = args[index];
+    index ++;
+  }
+  if (found == 0) {
+    free(op);
+    return 0;
+  }
+
+  int op_index = index;
+  left = malloc(sizeof(char*) * (index + 1));
+  right = malloc(sizeof(char*) * (nargs - index));
+  for (index  = 0; index < op_index-1; index ++) {
+    left[index] = malloc(sizeof(char) * strlen(args[index]));
+    strcpy(left[index], args[index]);
+  }
+  for (index  = op_index; index < nargs; index ++) {
+    right[index-op_index] = malloc(sizeof(char) * strlen(args[index]));
+    strcpy(right[index-op_index], args[index]);
+  }
+
+  return 1;
+}
+
+void free_arr_arr(char ** arr) {
+  int index = 0;
+  while (arr[index] != NULL) {
+    free(arr[index]);
+  }
+  free(arr);
+}
 
 void termsig(int sig) {} // Catch termsig as parent but not child
 int bg_running = 0;
@@ -38,6 +112,7 @@ int main(void) {
   signal(SIGINT, termsig);
   signal(SIGTERM, handle_sigint);
   signal(SIGTSTP, handle_sigint);
+  int noclobber = REDIR_OW;
 
   path = get_path();
   prompt = getcwd(NULL, 0);
@@ -57,8 +132,26 @@ label:
     }
 
     args = get_argv(buf, nargs);
-
-    if (strcmp(args[0], "pwd") == 0) { /* built-in command pwd */
+    if (parse_for_op()) {
+      if (strcmp(op, ">") == 0) {
+        redirect(left, right[0], noclobber);
+      }
+      if (strcmp(op, "<") == 0) {
+        redirect(right, left[0], noclobber);
+      }
+      if (strcmp(op, ">>") == 0) {
+        redirect(left, right[0], noclobber|REDIR_AP);
+      }
+      if (strcmp(op, ">&") == 0) {
+        redirect(left, right[0], noclobber|REDIR_ER);
+      }
+      if (strcmp(op, ">>&") == 0) {
+        redirect(left, right[0], noclobber|REDIR_AP|REDIR_ER);
+      }
+    } else if (strcmp(args[0], "noclobber") == 0) {
+        noclobber = (((noclobber/REDIR_OW) +1)%2) * REDIR_OW;
+        printf("%d\n", noclobber/REDIR_OW);
+    } else if (strcmp(args[0], "pwd") == 0) { /* built-in command pwd */
       ptr = getcwd(NULL, 0);
       printf("CWD = [%s]\n", ptr);
       free(ptr);
@@ -87,7 +180,8 @@ label:
       char ** cmd = malloc(2*sizeof (char*));
       cmd[0] = "cp";
       cmd[1] = ".";
-      redirect(cmd, 2, "test", REDIR_AP|REDIR_ER);
+      redirect(cmd,  "test", REDIR_AP|REDIR_ER);
+      free(cmd);
     } 
     else if (strcmp(args[0], "pid") == 0) {
       printf("PID = %d\n", getpid());

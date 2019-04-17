@@ -34,7 +34,7 @@ void change_output(char *dest, int to_close, int oflags) {
  *        REDIR_AP: append to the file
  */
 
-void redirect(char **cmd_argv, int cmd_argc, char *filename, int options) {
+void redirect(char **cmd_argv,  char *filename, int options) {
   pid_t pid;
   int file_options = O_CREAT | O_RDWR;
 
@@ -42,14 +42,8 @@ void redirect(char **cmd_argv, int cmd_argc, char *filename, int options) {
     file_options |= O_APPEND;
   if (!(options & REDIR_OW) && !access(filename, F_OK)) {
     char ans, c;
-    printf("file exits, are you sure you want to continue?\n");
-    scanf("%c%c", &ans, &c);
-    if (ans == 'y')
-      printf("Overwrite or appending\n");
-    else {
-      printf("exiting\n");
-      return;
-    }
+    printf("%s: File exits.\n", filename);
+    return;
   }
 
   if ((pid = fork()) < 0) {
@@ -70,5 +64,5 @@ void redirect(char **cmd_argv, int cmd_argc, char *filename, int options) {
   if (options & REDIR_ER) 
     change_output("/dev/tty", 2, O_WRONLY);
   change_output("/dev/tty", 1, O_WRONLY);
-  printf("and we back\n");
 }
+
