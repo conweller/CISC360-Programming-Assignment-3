@@ -11,7 +11,6 @@ shell from Project 2.
       and document it well.
 * [ ] `watchmail`
 * [x] file redirections
-* [ ] `noclobber`
 * [ ] interprocess communication 
 
 ## Commenting Style Examples:
