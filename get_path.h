@@ -1,7 +1,7 @@
 /********************************************************
  * get_path.h                                           *
  *                                                      *
- * Author:  Connor, Onweller                            *
+ * Author:  Connor Onweller                             *
  *                                                      *
  * Purpose: Houses path_node struct for containing      *
  *            environment paths, declares various       *
