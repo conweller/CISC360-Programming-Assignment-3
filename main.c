@@ -152,6 +152,8 @@ label:
       if (strcmp(op, "|") == 0) {
         open_pipe(right, left);
       }
+      free(left);
+      free(right);
     } else if (strcmp(args[0], "noclobber") == 0) {
         noclobber = (((noclobber/REDIR_OW) +1)%2) * REDIR_OW;
         printf("%d\n", noclobber/REDIR_OW);
@@ -223,8 +225,6 @@ label:
     for (int i = 0; i < nargs; i++) {
       free(args[i]);
     }
-    free(left);
-    free(right);
     free(args); // Reset prompt and arguments
     free(prompt);
     prompt = getcwd(NULL, 0); // Update prompt
