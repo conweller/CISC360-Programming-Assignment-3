@@ -40,7 +40,7 @@ int main(void) {
   printf("%s> ", prompt);
 
   //Boolean used by watchuser to tell it if it has been called yet by the shell
-	int first = 1;
+	int first_watchuser = 1;
 
   // Jump back here if we recieve a ^D
 label:
@@ -81,7 +81,10 @@ label:
     } else if (strcmp(args[0], "pid") == 0) {
       printf("PID = %d\n", getpid());
     } else if (strcmp(args[0], "exit") == 0) { // Free everything and exit
-      free(prompt);
+      if (!first_watchuser) {
+		watchuser(args[0],0,0);
+	  }
+		free(prompt);
       free_path(path);
       for (int i = 0; i < nargs; i++) {
         free(args[i]);
@@ -94,16 +97,14 @@ label:
 			printf("Not enough arguments\n");
 		} else if (nargs == 2) {
 			printf("Searching for user\n");
-			if (first) {
-				watchuser(args[1],0,first);
-				first = 0;
-			} else {
-				watchuser(args[1],0,first);
+			watchuser(args[1],0,first_watchuser);
+			if (first_watchuser) {
+				first_watchuser = 0;
 			}
 		} else if (nargs == 3) {
 			if (strcmp(args[2], "off") == 0) {
-				if (!first) {
-					watchuser(args[1],1,first);
+				if (!first_watchuser) {
+					watchuser(args[1],1,first_watchuser);
 				}
 			} else {
 				printf("Invalid argument\n");

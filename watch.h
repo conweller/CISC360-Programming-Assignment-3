@@ -17,24 +17,27 @@
 
 struct Node {
   char *name;
-  char **tty;
-  int size;
+  int on;
+  char *tty;
+  char *host;
   struct Node *next;
 };
 
 /*
  *  Function: insert
  *  ------------------
- *    Returns void
+ *    Inserts a new username into the linked list of watched names
  *
  *    name: username string
+ *
+ *    return: void
  */
-struct Node *insert(char *name);
+void insert(char *name);
 
 /*
  *  Function: delete
  *  ------------------
- *    Returns void
+ *    Deletes a username from the linked list of watched names
  *
  *    name: username string
  */
@@ -43,7 +46,7 @@ void delete(char *name);
 /*
  *  Function: freeList
  *  ------------------
- *    Returns a
+ *    Free the linked list of watched names when exit is called
  *
  *    returns: void
  */
@@ -52,7 +55,7 @@ void freeList();
 /*
  *  Function: watchuser
  *  ------------------
- *    Returns a
+ *    Called by main to monitor usernames that log on and off the system
  *
  *    user: username string
  *    off: int representing if 'off' is specified (1 for yes, 0 for no)
@@ -65,7 +68,7 @@ int watchuser(char *user, int off, int first);
 /*
  *  Function: threaduser
  *  ------------------
- *    Called by pthread in watchuser
+ *    Called by pthread in watchuser; runs while loop to check for watched user activity
  *
  *    user: username string
  *
