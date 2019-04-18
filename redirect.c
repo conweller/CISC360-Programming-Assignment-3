@@ -14,7 +14,10 @@ int const REDIR_ER = 2;
 int const REDIR_AP = 4;
 
 void change_output(char *dest, int to_close, int oflags) {
+  /* printf("dest = %s\n",dest); */
   int fid = open(dest, oflags, 0666);
+  if (fid < 0 )
+    perror("open error");
   close(to_close);
   dup(fid);
   close(fid);
@@ -36,16 +39,19 @@ void change_output(char *dest, int to_close, int oflags) {
 
 void redirect(char **cmd_argv,  char *filename, int options) {
   pid_t pid;
-  int file_options = O_CREAT | O_RDWR ;
+  int file_options = O_CREAT | O_RDWR;
 
   if (options & REDIR_AP) 
+  {
     file_options |= O_APPEND;
+    printf("append\n");
+  }
   if (!(options & REDIR_OW) && !access(filename, F_OK)) {
     char ans, c;
     printf("%s: File exits.\n", filename);
     return;
   }
-  if (!access(filename, F_OK)){
+  if (!access(filename, F_OK) && !(options & REDIR_AP)){
     file_options |= O_TRUNC;
   }
 
@@ -57,11 +63,16 @@ void redirect(char **cmd_argv,  char *filename, int options) {
       perror("waitpid error");
       exit(1);
     }
+    change_output("/dev/tty", 1, O_WRONLY);
+    if (options & REDIR_ER) 
+      change_output("/dev/tty", 2, O_WRONLY);
   } else if (pid == 0) {
-    change_output(filename, 1, file_options);
+    change_output(filename, 1, file_options|O_APPEND);
     if (options & REDIR_ER) 
       change_output(filename, 2, file_options);
-    execvp(cmd_argv[0], cmd_argv);
+    if (execvp(cmd_argv[0], cmd_argv) == -1){
+      perror("exec error");
+    }
     exit(0);
   }
   if (options & REDIR_ER) 

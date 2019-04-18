@@ -84,16 +84,19 @@ int parse_for_op() {
   }
 
   int op_index = index;
-  left = malloc(sizeof(char*) * (index + 1));
-  right = malloc(sizeof(char*) * (nargs - index));
+  left = malloc(sizeof(char*) * (index));
+  right = malloc(sizeof(char*) * (nargs - index + 1));
   for (index  = 0; index < op_index-1; index ++) {
-    left[index] = malloc(sizeof(char) * strlen(args[index]));
-    strcpy(left[index], args[index]);
+    int size = 1+ strlen(args[index]);
+    left[index] = args[index];
   }
+  left[index] = NULL;
   for (index  = op_index; index < nargs; index ++) {
-    right[index-op_index] = malloc(sizeof(char) * strlen(args[index]));
-    strcpy(right[index-op_index], args[index]);
+    right[index-op_index] = (args[index]);
   }
+  printf("%d\n",index-op_index);
+  right[index-op_index] = NULL;
+  index = 0;
 
   return 1;
 }
