@@ -1,3 +1,4 @@
+#include "my_pipe.h"
 #include "get_arg.h"
 #include "redirect.h"
 #include "get_path.h"
@@ -37,49 +38,47 @@ void handle_sigint(int sig) { // Catch SIGTERM and SIGTSTP
 int parse_for_op() {
   int found = 0;
   char * tmp = args[0];
-  op = malloc(sizeof(char*) *3 );
   int index = 1;
   while (tmp != NULL) {
     if (strcmp(">", tmp) == 0) {
       found = 1;
-      op = ">";
+      op = tmp;
       break;
     }
     if(strcmp(">>", tmp) == 0) {
       found = 1;
-      op = ">>";
+      op = tmp;
       break;
     }
     if(strcmp(">&", tmp) == 0) {
       found = 1;
-      op = ">&";
+      op = tmp;
       break;
     }
     if(strcmp(">>&", tmp) == 0) {
       found = 1;
-      op = ">>&";
+      op = tmp;
       break;
     }
     if(strcmp("<", tmp) == 0) {
       found = 1;
-      op = "<";
+      op = tmp;
       break;
     }
     if (strcmp("|", tmp) == 0) {
       found = 1;
-      op = "|";
+      op = tmp;
       break;
     }
     if(strcmp("|&", tmp) == 0 ) {
       found = 1;
-      op = "|&";
+      op = tmp;
       break;
     }
     tmp = args[index];
     index ++;
   }
   if (found == 0) {
-    free(op);
     return 0;
   }
 
@@ -149,6 +148,9 @@ label:
       }
       if (strcmp(op, ">>&") == 0) {
         redirect(left, right[0], noclobber|REDIR_AP|REDIR_ER);
+      }
+      if (strcmp(op, "|") == 0) {
+        open_pipe(right, left);
       }
     } else if (strcmp(args[0], "noclobber") == 0) {
         noclobber = (((noclobber/REDIR_OW) +1)%2) * REDIR_OW;
@@ -221,6 +223,8 @@ label:
     for (int i = 0; i < nargs; i++) {
       free(args[i]);
     }
+    free(left);
+    free(right);
     free(args); // Reset prompt and arguments
     free(prompt);
     prompt = getcwd(NULL, 0); // Update prompt
