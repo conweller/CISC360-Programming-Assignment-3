@@ -13,8 +13,18 @@ int const REDIR_OW = 1;
 int const REDIR_ER = 2;
 int const REDIR_AP = 4;
 
+
+/*
+ *  Function: change_output
+ *  -----------------------
+ *    Changes std_out, std_err, or std_in to a file
+ *
+ *    dest: The filename of that to_close is being changed to
+ *    to_close: The fid to close (e.g. std_out, std_err, std_in)
+ *    oflags: open flags being passed to open (see open(2) for more details)
+ */
+
 void change_output(char *dest, int to_close, int oflags) {
-  /* printf("dest = %s\n",dest); */
   int fid = open(dest, oflags, 0666);
   if (fid < 0 )
     perror("open error");
@@ -42,10 +52,8 @@ void redirect(char **cmd_argv,  char *filename, int options) {
   int file_options = O_CREAT | O_RDWR;
 
   if (options & REDIR_AP) 
-  {
     file_options |= O_APPEND;
-    printf("append\n");
-  }
+
   if (!(options & REDIR_OW) && !access(filename, F_OK)) {
     char ans, c;
     printf("%s: File exits.\n", filename);
@@ -63,9 +71,6 @@ void redirect(char **cmd_argv,  char *filename, int options) {
       perror("waitpid error");
       exit(1);
     }
-    change_output("/dev/tty", 1, O_WRONLY);
-    if (options & REDIR_ER) 
-      change_output("/dev/tty", 2, O_WRONLY);
   } else if (pid == 0) {
     change_output(filename, 1, file_options|O_APPEND);
     if (options & REDIR_ER) 

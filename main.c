@@ -94,7 +94,6 @@ int parse_for_op() {
   for (index  = op_index; index < nargs; index ++) {
     right[index-op_index] = (args[index]);
   }
-  printf("%d\n",index-op_index);
   right[index-op_index] = NULL;
   index = 0;
 

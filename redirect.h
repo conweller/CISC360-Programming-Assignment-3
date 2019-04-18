@@ -15,8 +15,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+/* Redirect Overwrite */
 extern const int REDIR_OW;
+/* Redirect Standard Error */
 extern const int REDIR_ER;
+/* Redirect Append */
 extern const int REDIR_AP;
 
 /*
