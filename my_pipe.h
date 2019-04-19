@@ -17,15 +17,11 @@
 /*
  *  Function: open_pipe
  *  --------------
- *    Sets Standard output to pipe
+ *    Sets output of one command as the input of another
  *
- *    cmd_argv: the arguments for the command
- *    cmd_argc: the number of arguments for the command
- *    filename: the file to be written to
- *    options: options given to the function (bitwise orred together):
- *        REDIR_OW: overwrite existing file, if the inputted filename exists
- *        REDIR_ER: write std_err to file as well as std_out
- *        REDIR_AP: append to the file
+ *    right: The command to the right of the pipe symbol
+ *    left: The command to the left of the pipe symnbol
+ *    err: if true, it will pipe std_err to right command
  */
 
 void open_pipe(char ** right_argv, char ** left_argv, char err);

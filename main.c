@@ -218,7 +218,8 @@ label:
       } else if (pid == 0) { /* child */
         if (bg)         //if background process, make it's process group 0
           setpgid(0, 0); 
-        execvp(args[0], args);
+        if (execvp(args[0], args) < 0)
+          execv(args[0], args);
         printf("couldn't execute: %s\n", args[0]);
         exit(127);
       }

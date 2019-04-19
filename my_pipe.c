@@ -19,6 +19,16 @@ void change_pipe(int dest, int to_close) {
   close(dest);
 }
 
+/*
+ *  Function: open_pipe
+ *  --------------
+ *    Sets output of one command as the input of another
+ *
+ *    right: The command to the right of the pipe symbol
+ *    left: The command to the left of the pipe symnbol
+ *    err: if true, it will pipe std_err to right command
+ */
+
 void open_pipe(char ** right_argv, char ** left_argv, char err) {
   int pipefd[2];
   pipe(pipefd);
@@ -41,10 +51,10 @@ void open_pipe(char ** right_argv, char ** left_argv, char err) {
       }
       return;
     } else if (pid == 0) {
-      /* close(0); */
       close(pipefd[1]);
       change_pipe(pipefd[0], 0);
-      execvp(right_argv[0], right_argv);
+      if (execvp(right_argv[0], right_argv) < 0)
+        execv(right_argv[0], right_argv);
       exit(0);
     }
   } else if (pid == 0) {
@@ -55,7 +65,8 @@ void open_pipe(char ** right_argv, char ** left_argv, char err) {
     dup2(pipefd[1], 1);  // send stdout to the pipe
     if (err)
       dup2(pipefd[1], 2);  // send stderr to the pipe
-    execvp(left_argv[0], left_argv);
+    if (execvp(left_argv[0], left_argv) < 0)
+      execv(left_argv[0], left_argv);
     exit(0);
   }
 }
