@@ -4,7 +4,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <utmpx.h>
-
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
 
 /********************************************************
  * watch.h                                              *

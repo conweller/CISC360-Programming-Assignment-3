@@ -2,7 +2,6 @@
 
 long int *result_mail;
 pthread_mutex_t lock_user;
-pthread_mutex_t lock_mail;
 struct Node *userhead;
 struct Node *mailhead;
 pthread_t user_id;
@@ -257,7 +256,6 @@ void *threaduser(void *something) {
 
 int watchmail(char *file, int off) {
 
-	pthread_mutex_init(&lock_mail, NULL);
 	if (strcmp(file,"exit") == 0) {
 		struct Node *temp = mailhead;
 		while (temp != NULL) {
@@ -273,7 +271,7 @@ int watchmail(char *file, int off) {
 		freeList("mail");
 		return 0;
 	}
-	if (access(file, X_OK) != 0) {
+	if (access(file, F_OK) != 0) {
 		perror("File not found.");
 	} else if (off) {
 		delete(file, "mail");
@@ -292,7 +290,9 @@ int watchmail(char *file, int off) {
 		if (unique) {
 			pthread_t id;
 			insert(file, id, "mail");
-			if (pthread_create(&id, NULL, threadmail, (void *)file) != 0) { 
+			
+			char *name = (char *) malloc(strlen(file) + 1);  // malloc space for name
+			if (pthread_create(&id, NULL, threadmail, name) != 0) { 
 				perror("pthread_create() error");                                           
 				exit(1);                                                                    
 			}
@@ -301,14 +301,21 @@ int watchmail(char *file, int off) {
 	return 0;
 }
 
-void *threadmail(void *something) {
-	pthread_mutex_lock(&lock_mail);
-	int i = 0;
-	while (i < 10) {
-		printf("WHY. ARE YOU. RUNNING\n");
-		i++;
-		sleep(1);
+void *threadmail(void *file) {
+	struct stat buff;
+	char *name = (char *) file;
+	printf("Name is %s\n",name);
+	stat(name, &buff);
+	long int past = buff.st_size;
+	printf("past is %d\n",past);
+	while (1) {
+		stat(name, &buff);
+		printf("buff is %d\n",buff.st_size);
+		if (buff.st_size > past) {
+			printf("\a You've got Mail in %s at %s\n", name, ctime(&buff.st_ctim.tv_sec));
+			past = buff.st_size;
+		}
+		sleep(2);
 	}
-	pthread_mutex_unlock(&lock_mail);
 	return NULL;
 }
