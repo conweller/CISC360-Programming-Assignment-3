@@ -1,3 +1,4 @@
+#include "my_pipe.h"
 #include "get_arg.h"
 #include "redirect.h"
 #include "get_path.h"
@@ -37,49 +38,47 @@ void handle_sigint(int sig) { // Catch SIGTERM and SIGTSTP
 int parse_for_op() {
   int found = 0;
   char * tmp = args[0];
-  op = malloc(sizeof(char*) *3 );
   int index = 1;
   while (tmp != NULL) {
     if (strcmp(">", tmp) == 0) {
       found = 1;
-      op = ">";
+      op = tmp;
       break;
     }
     if(strcmp(">>", tmp) == 0) {
       found = 1;
-      op = ">>";
+      op = tmp;
       break;
     }
     if(strcmp(">&", tmp) == 0) {
       found = 1;
-      op = ">&";
+      op = tmp;
       break;
     }
     if(strcmp(">>&", tmp) == 0) {
       found = 1;
-      op = ">>&";
+      op = tmp;
       break;
     }
     if(strcmp("<", tmp) == 0) {
       found = 1;
-      op = "<";
+      op = tmp;
       break;
     }
     if (strcmp("|", tmp) == 0) {
       found = 1;
-      op = "|";
+      op = tmp;
       break;
     }
     if(strcmp("|&", tmp) == 0 ) {
       found = 1;
-      op = "|&";
+      op = tmp;
       break;
     }
     tmp = args[index];
     index ++;
   }
   if (found == 0) {
-    free(op);
     return 0;
   }
 
@@ -150,6 +149,14 @@ label:
       if (strcmp(op, ">>&") == 0) {
         redirect(left, right[0], noclobber|REDIR_AP|REDIR_ER);
       }
+      if (strcmp(op, "|") == 0) {
+        open_pipe(right, left, 0);
+      }
+      if (strcmp(op, "|&") == 0) {
+        open_pipe(right, left, 1);
+      }
+      free(left);
+      free(right);
     } else if (strcmp(args[0], "noclobber") == 0) {
         noclobber = (((noclobber/REDIR_OW) +1)%2) * REDIR_OW;
         printf("%d\n", noclobber/REDIR_OW);
@@ -178,13 +185,6 @@ label:
         chdir(args[1]);
       }
     }
-    else if (strcmp(args[0], "red") == 0) {
-      char ** cmd = malloc(2*sizeof (char*));
-      cmd[0] = "cp";
-      cmd[1] = ".";
-      redirect(cmd,  "test", REDIR_AP|REDIR_ER);
-      free(cmd);
-    } 
     else if (strcmp(args[0], "pid") == 0) {
       printf("PID = %d\n", getpid());
     } else if (strcmp(args[0], "exit") == 0) { // Free everything and exit
@@ -211,7 +211,8 @@ label:
       } else if (pid == 0) { /* child */
         if (bg)         //if background process, make it's process group 0
           setpgid(0, 0); 
-        execvp(args[0], args);
+        if (execvp(args[0], args) < 0)
+          execv(args[0], args);
         printf("couldn't execute: %s\n", args[0]);
         exit(127);
       }

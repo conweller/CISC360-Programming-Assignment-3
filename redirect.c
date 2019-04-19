@@ -75,8 +75,8 @@ void redirect(char **cmd_argv,  char *filename, int options) {
     change_output(filename, 1, file_options|O_APPEND);
     if (options & REDIR_ER) 
       change_output(filename, 2, file_options);
-    if (execvp(cmd_argv[0], cmd_argv) == -1){
-      perror("exec error");
+    if (execvp(cmd_argv[0], cmd_argv) == -1) {
+      execv(cmd_argv[0],cmd_argv);
     }
     exit(0);
   }
