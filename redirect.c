@@ -3,7 +3,7 @@
  *                                                      *
  * Author:  Connor Onweller                             *
  *                                                      *
- * Purpose: Contains methods to redirect output form    *
+ * Purpose: Contains methods to redirect output from    *
  * one command to a file                                *
  ********************************************************/
 
