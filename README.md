@@ -1,4 +1,6 @@
 # Programming Assignment 3
+By Connor Onweller and Sophia Freaney
+
 The main objective of this assignment is to adding more functionalities to your
 shell from Project 2.
 
