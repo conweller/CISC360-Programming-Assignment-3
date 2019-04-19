@@ -1,5 +1,5 @@
-shell: main.o get_path.o get_arg.o redirect.o my_pipe.o
-	gcc -g main.o get_path.o get_arg.o redirect.o my_pipe.o -o shell
+shell: main.o get_path.o get_arg.o redirect.o my_pipe.o watch.o
+	gcc -g main.o get_path.o get_arg.o redirect.o my_pipe.o watch.o -o shell -lpthread
 
 main.o: main.c
 	gcc -g -c main.c
@@ -15,6 +15,9 @@ redirect.o: redirect.c
 
 my_pipe.o: my_pipe.c
 	gcc -g -c my_pipe.c
+
+watch.o: watch.c
+	gcc -g -c watch.c
 
 clean:
 	rm *.o shell

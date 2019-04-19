@@ -10,6 +10,7 @@
 #include "get_path.h"
 #include "my_pipe.h"
 #include "redirect.h"
+#include "watch.h"
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -127,6 +128,9 @@ int main(void) {
   prompt = getcwd(NULL, 0);
   // Allocating the prompt prefix makes frees easier later on
 
+  // Boolean used by watchuser to tell it if it has been called yet by the shell
+  int first_watchuser = 1;
+
   // We need to store the starting directory for cd - command
   printf("%s> ", prompt);
   // Jump back here if we recieve a ^D
@@ -166,13 +170,13 @@ label:
       }
       free(left);
       free(right);
-    } else if (strcmp(args[0], "noclobber") == 0) { /* displays the correct values
-                                                       for noclobber but the stored
-                                                       values differ, to make
-                                                       the flags easier to work
-                                                       with */
+    } else if (strcmp(args[0], "noclobber") == 0) { /* displays the correct
+                                                       values for noclobber but
+                                                       the stored values differ,
+                                                       to make the flags easier
+                                                       to work with */
       noclobber = (((noclobber / REDIR_OW) + 1) % 2) * REDIR_OW;
-      printf("%d\n", ((noclobber / REDIR_OW)+1)%2);
+      printf("%d\n", ((noclobber / REDIR_OW) + 1) % 2);
     } else if (strcmp(args[0], "pwd") == 0) { /* built-in command pwd */
       ptr = getcwd(NULL, 0);
       printf("CWD = [%s]\n", ptr);
@@ -199,7 +203,47 @@ label:
       }
     } else if (strcmp(args[0], "pid") == 0) {
       printf("PID = %d\n", getpid());
+    } else if (strcmp(args[0], "watchuser") == 0) {
+      printf("Executing built-in command watchuser\n");
+      if (nargs == 1) {
+        printf("Not enough arguments\n");
+      } else if (nargs == 2) {
+        printf("Searching for user\n");
+        watchuser(args[1], 0, first_watchuser);
+        if (first_watchuser) {
+          first_watchuser = 0;
+        }
+      } else if (nargs == 3) {
+        if (strcmp(args[2], "off") == 0) {
+          if (!first_watchuser) {
+            watchuser(args[1], 1, first_watchuser);
+          }
+        } else {
+          printf("Invalid argument\n");
+        }
+      } else {
+        printf("Too many arguments\n");
+      }
+    } else if (strcmp(args[0], "watchmail") == 0) {
+      printf("Executing built-in command watchmail\n");
+      if (nargs == 1) {
+        printf("Not enough arguments\n");
+      } else if (nargs == 2) {
+        printf("Searching for file\n");
+        watchmail(args[1], 0);
+      } else if (nargs == 3) {
+        if (strcmp(args[2], "off") == 0) {
+          watchmail(args[1], 1);
+        } else {
+          printf("Invalid argument\n");
+        }
+      } else {
+        printf("Too many arguments\n");
+      }
     } else if (strcmp(args[0], "exit") == 0) { // Free everything and exit
+      if (!first_watchuser) {
+        watchuser(args[0], 0, 0);
+      }
       free(prompt);
       free_path(path);
       for (int i = 0; i < nargs; i++) {
