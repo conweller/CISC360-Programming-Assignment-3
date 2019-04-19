@@ -289,9 +289,9 @@ int watchmail(char *file, int off) {
 		/* If it is a new name, inserts the appropriate node */
 		if (unique) {
 			pthread_t id;
-			insert(file, id, "mail");
-			
+			insert(file, id, "mail");		
 			char *name = (char *) malloc(strlen(file) + 1);  // malloc space for name
+			strcpy(name,file);
 			if (pthread_create(&id, NULL, threadmail, name) != 0) { 
 				perror("pthread_create() error");                                           
 				exit(1);                                                                    
@@ -304,13 +304,10 @@ int watchmail(char *file, int off) {
 void *threadmail(void *file) {
 	struct stat buff;
 	char *name = (char *) file;
-	printf("Name is %s\n",name);
 	stat(name, &buff);
 	long int past = buff.st_size;
-	printf("past is %d\n",past);
 	while (1) {
 		stat(name, &buff);
-		printf("buff is %d\n",buff.st_size);
 		if (buff.st_size > past) {
 			printf("\a You've got Mail in %s at %s\n", name, ctime(&buff.st_ctim.tv_sec));
 			past = buff.st_size;
