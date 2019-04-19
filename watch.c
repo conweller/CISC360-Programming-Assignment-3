@@ -61,7 +61,7 @@ void delete(char *name, char *type) {
 	}
 	while (temp != NULL) { //traverses whole list
 		if (strcmp(temp->name, name) == 0) {
-			if (temp->id != NULL) {
+			if (temp->id != (pthread_t)NULL) {
 				if (pthread_cancel(temp->id)!= 0) {
 					perror("pthread_cancel() error");
 				}
@@ -178,7 +178,7 @@ int watchuser(char *name, int off, int first) {
 		}
 		freeList("user");
 	} else if (first) {
-		insert(name, NULL, "user");
+		insert(name, (pthread_t)NULL, "user");
 		if (pthread_create(&user_id, NULL, threaduser, NULL) != 0) {                         
     		perror("pthread_create() error");                                           
     		exit(1);                                                                    
@@ -198,7 +198,7 @@ int watchuser(char *name, int off, int first) {
 		}
 		/* If it is a new name, inserts the appropriate node */
 		if (unique) {
-			insert(name, NULL, "user");
+			insert(name, (pthread_t)NULL, "user");
 		}
 	}
 	return 0;
