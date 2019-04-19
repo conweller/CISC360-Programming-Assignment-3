@@ -1,49 +1,60 @@
 # Programming Assignment 3
+By Connor Onweller and Sophia Freaney
+
 The main objective of this assignment is to adding more functionalities to your
 shell from Project 2.
 
-## TODO
-* [ ] background a 'job' using `&`
-    * [ ] Extra Credit (10 points): Implement the `fg` built-in command
-* [ ] `watchuser`
-    * [ ] Extra Credit (5 points): Also have your thread notify when the users
-      being watched log off of a tty. Make it clear that you do this if you do,
-      and document it well.
-* [ ] `watchmail`
-* [ ] file redirections
-* [ ] `noclobber`
-* [ ] interprocess communication 
+## Usage
+Compile and run with:
+```
+make
+```
 
-## Commenting Style Examples:
-### File Headers:
+## New Features
+### Background with `&`
+Executes a process in the background.  
+Use by saying:
 ```
-/********************************************************
- * get_path.h                                           *
- *                                                      *
- * Author:  Connor, Onweller                            *
- *                                                      *
- * Purpose: Contains methods to parse argv and argc     *
- *            from a string                             *
- ********************************************************/
- ```
-### Functions:
+<external command> &
 ```
-/*
- *  Function: get_argv
- *  ------------------
- *    Returns a list of arguments seperated by spaces from a given buffer
- *
- *    buf: the inputted string buffer to be parsed
- *    argc: the number of arguments in the buffer (necissary)
- *
- *    returns: the list of arguments contained within the input buffer
- */
+**Notes:** 
+* The shell will not print a new prompt until the next command is entered (just
+  like in `tcsh`)
+* This will not work with other internal
+
+### `watchuser` command
+This command takes as its first argument a username to keep track of when the
+user logs on
+
+### `watchmail` command
+This command takes as the first argument a name of a file, which must already
+exist (give an error if it doesn't), to watch for new 'mails' in.
+
+### File Redirection
+Redirect the output of a command to a file with:
+* `>`: redirect standard output of command on the left to file on the right
+  (i.e. `<command> > file`)
+* `>&`: redirect both standard output and standard error of command on the left
+  to file on the right (i.e. `<command> >& file`).
+* `>>`:  redirect standard output of command on the left to file on the right
+  (i.e. `<command> >> file`), appending to the file.
+* `>>&`: redirect both standard output and standard error of command on the left to
+  file on the right (i.e. `<command> >>& file`), appending to the file.
+* `<`: redirect standard input of command on left to come from file on the
+  right (i.e. `<command> < file`).
+
+The overwriting of files can be prevented with the `noclobber` command. When
+called `noclobber` changes its variable value from 0 to 1 or 1 to 0. When this
+value is 0 files can be overwritten with redirection commands. When the value
+is 1, attempts to redirect to a file that exist will instead produce the
+following output:
 ```
-### Structures:
+<filename>: File exists.
 ```
-/*
- *  Structure: list_node
- *  --------------------
- *    Stores an directory list as a linked list
- */
- ```
+
+### Piping
+Support for interprocess communications with:
+* `|`: pipes the standard output of the command on the left to the standard
+  input of the command on the right
+* `|&`: pipes the standard output and standard error of the command on the left
+  to the standard input of the command on the right

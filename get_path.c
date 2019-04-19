@@ -1,7 +1,7 @@
 /********************************************************
  * get_path.c                                           *
  *                                                      *
- * Author:  Connor, Onweller                            *
+ * Author:  Connor Onweller                             *
  *                                                      *
  * Purpose: Implements function to store environment    *
  *            in a linked list and free list            *
