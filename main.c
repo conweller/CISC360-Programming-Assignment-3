@@ -1,14 +1,22 @@
-#include "my_pipe.h"
+/********************************************************
+ * main.c                                               *
+ *                                                      *
+ * Author:  Connor Onweller & Sophia Freaney            *
+ *                                                      *
+ * Purpose: Contains the loop for the shell as well as  *
+ *  some helper methods                                 *
+ ********************************************************/
 #include "get_arg.h"
-#include "redirect.h"
 #include "get_path.h"
+#include "my_pipe.h"
+#include "redirect.h"
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <errno.h>
 #define _XOPEN_SOURCE 500
 #define MAXLINE 128
 
@@ -20,9 +28,9 @@ pid_t pid;
 int status;
 char *ptr;
 char *prompt;
-char ** left;
-char ** right;
-char * op;
+char **left;
+char **right;
+char *op;
 struct path_node *path;
 
 int sigignore(int sig);
@@ -37,7 +45,7 @@ void handle_sigint(int sig) { // Catch SIGTERM and SIGTSTP
 
 int parse_for_op() {
   int found = 0;
-  char * tmp = args[0];
+  char *tmp = args[0];
   int index = 1;
   while (tmp != NULL) {
     if (strcmp(">", tmp) == 0) {
@@ -45,22 +53,22 @@ int parse_for_op() {
       op = tmp;
       break;
     }
-    if(strcmp(">>", tmp) == 0) {
+    if (strcmp(">>", tmp) == 0) {
       found = 1;
       op = tmp;
       break;
     }
-    if(strcmp(">&", tmp) == 0) {
+    if (strcmp(">&", tmp) == 0) {
       found = 1;
       op = tmp;
       break;
     }
-    if(strcmp(">>&", tmp) == 0) {
+    if (strcmp(">>&", tmp) == 0) {
       found = 1;
       op = tmp;
       break;
     }
-    if(strcmp("<", tmp) == 0) {
+    if (strcmp("<", tmp) == 0) {
       found = 1;
       op = tmp;
       break;
@@ -70,36 +78,36 @@ int parse_for_op() {
       op = tmp;
       break;
     }
-    if(strcmp("|&", tmp) == 0 ) {
+    if (strcmp("|&", tmp) == 0) {
       found = 1;
       op = tmp;
       break;
     }
     tmp = args[index];
-    index ++;
+    index++;
   }
   if (found == 0) {
     return 0;
   }
 
   int op_index = index;
-  left = malloc(sizeof(char*) * (index));
-  right = malloc(sizeof(char*) * (nargs - index + 1));
-  for (index  = 0; index < op_index-1; index ++) {
-    int size = 1+ strlen(args[index]);
+  left = malloc(sizeof(char *) * (index));
+  right = malloc(sizeof(char *) * (nargs - index + 1));
+  for (index = 0; index < op_index - 1; index++) {
+    int size = 1 + strlen(args[index]);
     left[index] = args[index];
   }
   left[index] = NULL;
-  for (index  = op_index; index < nargs; index ++) {
-    right[index-op_index] = (args[index]);
+  for (index = op_index; index < nargs; index++) {
+    right[index - op_index] = (args[index]);
   }
-  right[index-op_index] = NULL;
+  right[index - op_index] = NULL;
   index = 0;
 
   return 1;
 }
 
-void free_arr_arr(char ** arr) {
+void free_arr_arr(char **arr) {
   int index = 0;
   while (arr[index] != NULL) {
     free(arr[index]);
@@ -124,7 +132,8 @@ int main(void) {
   // Jump back here if we recieve a ^D
 label:
   while (fgets(buf, MAXLINE, stdin) != NULL) {
-    while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {} //check if bg have terminated
+    while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {
+    } // check if bg have terminated
 
     nargs = get_argc(buf);
     if (nargs == 0) {
@@ -141,13 +150,13 @@ label:
         redirect(right, left[0], noclobber);
       }
       if (strcmp(op, ">>") == 0) {
-        redirect(left, right[0], noclobber|REDIR_AP);
+        redirect(left, right[0], noclobber | REDIR_AP);
       }
       if (strcmp(op, ">&") == 0) {
-        redirect(left, right[0], noclobber|REDIR_ER);
+        redirect(left, right[0], noclobber | REDIR_ER);
       }
       if (strcmp(op, ">>&") == 0) {
-        redirect(left, right[0], noclobber|REDIR_AP|REDIR_ER);
+        redirect(left, right[0], noclobber | REDIR_AP | REDIR_ER);
       }
       if (strcmp(op, "|") == 0) {
         open_pipe(right, left, 0);
@@ -157,9 +166,13 @@ label:
       }
       free(left);
       free(right);
-    } else if (strcmp(args[0], "noclobber") == 0) {
-        noclobber = (((noclobber/REDIR_OW) +1)%2) * REDIR_OW;
-        printf("%d\n", noclobber/REDIR_OW);
+    } else if (strcmp(args[0], "noclobber") == 0) { /* displays the correct values
+                                                       for noclobber but the stored
+                                                       values differ, to make
+                                                       the flags easier to work
+                                                       with */
+      noclobber = (((noclobber / REDIR_OW) + 1) % 2) * REDIR_OW;
+      printf("%d\n", ((noclobber / REDIR_OW)+1)%2);
     } else if (strcmp(args[0], "pwd") == 0) { /* built-in command pwd */
       ptr = getcwd(NULL, 0);
       printf("CWD = [%s]\n", ptr);
@@ -176,16 +189,15 @@ label:
         free(sig);
       }
     } else if (strcmp(args[0], "cd") == 0) {
-      if (nargs == 1) {                           // cd home
+      if (nargs == 1) { // cd home
         char *home = getenv("HOME");
         chdir(home);
-      } else if (nargs > 2) {                     // cant do anything
+      } else if (nargs > 2) { // cant do anything
         printf("Too many arguments\n");
-      } else {                                    // normal cd
+      } else { // normal cd
         chdir(args[1]);
       }
-    }
-    else if (strcmp(args[0], "pid") == 0) {
+    } else if (strcmp(args[0], "pid") == 0) {
       printf("PID = %d\n", getpid());
     } else if (strcmp(args[0], "exit") == 0) { // Free everything and exit
       free(prompt);
@@ -197,20 +209,20 @@ label:
       exit(0);
     } else if (strlen(args[0]) != 0) { // else try to execute external command
       char bg = 0;
-      if (args[nargs-1][0] == '&'){ // if last arg is &
+      if (args[nargs - 1][0] == '&') { // if last arg is &
 
-        bg = 1;             // mark as a background process
-        free(args[nargs-1]); // reduce the numbber of arguments
+        bg = 1;                // mark as a background process
+        free(args[nargs - 1]); // reduce the numbber of arguments
         free(args[nargs]);
-        args[nargs-1] = NULL;
-        nargs --;
+        args[nargs - 1] = NULL;
+        nargs--;
       }
       if ((pid = fork()) < 0) {
         printf("fork error\n");
         exit(1);
       } else if (pid == 0) { /* child */
-        if (bg)         //if background process, make it's process group 0
-          setpgid(0, 0); 
+        if (bg)              // if background process, make it's process group 0
+          setpgid(0, 0);
         if (execvp(args[0], args) < 0)
           execv(args[0], args);
         printf("couldn't execute: %s\n", args[0]);
@@ -231,6 +243,3 @@ label:
   goto label;      // Reenter loop
   exit(0);
 }
-
-
-
