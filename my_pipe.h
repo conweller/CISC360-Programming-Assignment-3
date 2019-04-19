@@ -28,4 +28,4 @@
  *        REDIR_AP: append to the file
  */
 
-void open_pipe(char ** right_argv, char ** left_argv);
+void open_pipe(char ** right_argv, char ** left_argv, char err);

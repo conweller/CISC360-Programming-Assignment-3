@@ -150,7 +150,10 @@ label:
         redirect(left, right[0], noclobber|REDIR_AP|REDIR_ER);
       }
       if (strcmp(op, "|") == 0) {
-        open_pipe(right, left);
+        open_pipe(right, left, 0);
+      }
+      if (strcmp(op, "|&") == 0) {
+        open_pipe(right, left, 1);
       }
       free(left);
       free(right);
