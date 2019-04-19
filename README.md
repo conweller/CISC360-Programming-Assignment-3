@@ -15,7 +15,7 @@ Use by saying:
 ```
 <external command> &
 ```
-**Notes*:*  
+**Notes:** 
 * The shell will not print a new prompt until the next command is entered (just
   like in `tcsh`)
 * This will not work with other internal
