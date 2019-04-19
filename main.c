@@ -114,7 +114,20 @@ label:
 		}
   	} else if (strcmp(args[0], "watchmail") == 0) {
 		printf("Executing built-in command watchmail\n");
-		watchmail("filename");
+		if (nargs ==  1) {
+			printf("Not enough arguments\n");
+		} else if (nargs == 2) {
+			printf("Searching for file\n");
+			watchmail(args[1],0);
+		} else if (nargs == 3) {
+			if (strcmp(args[2], "off") == 0) {
+				watchmail(args[1],1);
+			} else {
+				printf("Invalid argument\n");
+			}
+		} else {
+			printf("Too many arguments\n");
+		}	
 	} else if (strlen(args[0]) != 0) { // else try to execute external command
       if ((pid = fork()) < 0) {
         printf("fork error\n");

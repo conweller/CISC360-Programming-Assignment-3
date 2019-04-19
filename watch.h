@@ -20,6 +20,7 @@ struct Node {
   int on;
   char *tty;
   char *host;
+  pthread_t id;
   struct Node *next;
 };
 
@@ -32,7 +33,7 @@ struct Node {
  *
  *    return: void
  */
-void insert(char *name);
+void insert(char *name, pthread_t id, char *type);
 
 /*
  *  Function: delete
@@ -41,7 +42,7 @@ void insert(char *name);
  *
  *    name: username string
  */
-void delete(char *name);
+void delete(char *name, char *type);
 
 /*
  *  Function: freeList
@@ -50,7 +51,7 @@ void delete(char *name);
  *
  *    returns: void
  */
-void freeList();
+void freeList(char *type);
 
 /*
  *  Function: watchuser
@@ -86,7 +87,7 @@ void *threaduser(void *something);
  *
  *    returns: the list of arg
  */
-int watchmail(char *file);
+int watchmail(char *file, int off);
 
 /*
  *  Function: threadmail

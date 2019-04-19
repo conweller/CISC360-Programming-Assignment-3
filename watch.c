@@ -1,13 +1,13 @@
 #include "watch.h"
 
-int *nthreads;
 long int *result_mail;
 pthread_mutex_t lock_user;
 pthread_mutex_t lock_mail;
-struct Node *head;
-pthread_t id;
+struct Node *userhead;
+struct Node *mailhead;
+pthread_t user_id;
 
-void insert(char *name) {
+void insert(char *name, pthread_t id, char *type) {
 	struct Node *node1;
 
 	node1 = (struct Node *) malloc(sizeof(struct Node));        // malloc space for Node
@@ -18,40 +18,74 @@ void insert(char *name) {
 	node1->on = 0;
 	node1->tty = NULL;
 	node1->host = NULL;
+	node1->id = id;
 	node1->next = NULL;
-
-	if (head == NULL) {
-		head = node1;
+	
+	if (strcmp(type, "user") == 0) {
+		if (userhead == NULL) {
+			userhead = node1;
+		} else {
+			struct Node *temp = userhead;
+			while (temp->next) {
+				temp = temp->next;
+			}
+			temp->next = node1;
+		}	
 	} else {
-		struct Node *temp = head;
-		while (temp->next) {
-			temp = temp->next;
+		if (mailhead == NULL) {
+			mailhead = node1;
+		} else {
+			struct Node *temp = mailhead;
+			while (temp->next) {
+				temp = temp->next;
+			}
+			temp->next = node1;
 		}
-		temp->next = node1;
 	}
+
 }
 
-void delete(char *name) {
+void delete(char *name, char *type) {
 	struct Node *temp, *prev;
-	if (head == NULL) {
-		return;
+	if (strcmp(type, "user") == 0) {
+		if (userhead == NULL) {
+			return;
+		} else {
+			temp = userhead;
+		}
 	} else {
-		temp = head;
-		while (temp != NULL) { //traverses whole list
-			if (strcmp(temp->name, name) == 0) {
+		if (mailhead == NULL) {
+			return;
+		} else {
+			temp = mailhead;
+		}
+	}
+	while (temp != NULL) { //traverses whole list
+		if (strcmp(temp->name, name) == 0) {
+			if (temp->id != NULL) {
+				if (pthread_cancel(temp->id)!= 0) {
+					perror("pthread_cancel() error");
+				}
+				if (pthread_join(temp->id, NULL) != 0) {
+					perror("pthread_join() error");
+					exit(4);
+				}
+				// MAY NEED THIS IDK free(temp->id);
+			}
+			if (strcmp(type, "user") == 0) {
 				//condition if deleting the only node left in list
-				if ((temp == head) && (head->next = NULL)) {
+				if ((temp == userhead) && (userhead->next = NULL)) {
 					free(temp->name);
 					if (temp->tty != NULL) {
 						free(temp->tty);
 						free(temp->host);
 					}
 					free(temp); //frees the Node record
-					head = NULL;
+					userhead = NULL;
 				}
 				//condition if head node is deleted but more nodes are present
-				else if (temp == head) {
-					head = temp->next;
+				else if (temp == userhead) {
+					userhead = temp->next;
 					free(temp->name);
 					if (temp->tty != NULL) {
 						free(temp->tty);
@@ -67,51 +101,94 @@ void delete(char *name) {
 					}
 					free(temp); //frees the Node record
 				}
-				break;
+			} else {
+				//condition if deleting the only node left in list
+				if ((temp == mailhead) && (mailhead->next = NULL)) {
+					free(temp->name);
+					if (temp->tty != NULL) {
+						free(temp->tty);
+						free(temp->host);
+					}
+					free(temp); //frees the Node record
+					mailhead = NULL;
+				}
+				//condition if head node is deleted but more nodes are present
+				else if (temp == mailhead) {
+					mailhead = temp->next;
+					free(temp->name);
+					if (temp->tty != NULL) {
+						free(temp->tty);
+						free(temp->host);
+					}
+					free(temp); //frees the Node record
+				} else {
+					prev->next = temp->next; //changes next pointer for previous node
+					free(temp->name);
+					if (temp->tty != NULL) {
+						free(temp->tty);
+						free(temp->host);
+					}
+					free(temp); //frees the Node record
+				}		
 			}
-			prev = temp;
-			temp = temp->next;
+			break;
 		}
+		prev = temp;
+		temp = temp->next;
 	}
 }
 
-void freeList() {
+void freeList(char *type) {
 	struct Node *temp;
-	while (head != NULL) {
-		temp = head;
-		head = head->next; // point to next Node
-		free(temp->name);  // first free name inside Node
-		if (temp->tty != NULL) {
-			free(temp->tty);
-			free(temp->host);
+	if (strcmp(type, "user") == 0) {
+		while (userhead != NULL) {
+			temp = userhead;
+			userhead = userhead->next; // point to next Node
+			free(temp->name);  // first free name inside Node
+			if (temp->tty != NULL) {
+				free(temp->tty);
+				free(temp->host);
+			}
+			free(temp);        // then free Node
 		}
-		free(temp);        // then free Node
+	} else {
+		while (mailhead != NULL) {
+			temp = mailhead;
+			mailhead = mailhead->next; // point to next Node
+			free(temp->name);  // first free name inside Node
+			if (temp->tty != NULL) {
+				free(temp->tty);
+				free(temp->host);
+			}
+			free(temp);        // then free Node
+		}
 	}
+
 }
 
 int watchuser(char *name, int off, int first) {
 
 	pthread_mutex_init(&lock_user, NULL);
 	if (strcmp(name,"exit") == 0) {
-		if (pthread_cancel(id)!= 0) {
+		if (pthread_cancel(user_id)!= 0) {
 			perror("pthread_cancel() error");
 		}
-  		if (pthread_join(id, NULL) != 0) {                                          
+  		if (pthread_join(user_id, NULL) != 0) {                                          
 	    	perror("pthread_join() error");                                             
 			exit(4);                                                                    
 		}
-		freeList();
+		freeList("user");
 	} else if (first) {
-		insert(name);
-		if (pthread_create(&id, NULL, threaduser, NULL) != 0) {                         
+		insert(name, NULL, "user");
+		if (pthread_create(&user_id, NULL, threaduser, NULL) != 0) {                         
     		perror("pthread_create() error");                                           
     		exit(1);                                                                    
   		}
 	} else if (off) {
-		delete(name);
+		delete(name, "user");
 	} else {
 		/* Checks to see if name is already in list */
-		struct Node *temp = head;
+		struct Node *temp = userhead;
 		int unique = 1;
 		while (temp != NULL) {
 			if (strcmp(name,temp->name) == 0) {
@@ -122,7 +199,7 @@ int watchuser(char *name, int off, int first) {
 		}
 		/* If it is a new name, inserts the appropriate node */
 		if (unique) {
-			insert(name);
+			insert(name, NULL, "user");
 		}
 	}
 	return 0;
@@ -130,14 +207,14 @@ int watchuser(char *name, int off, int first) {
 
 void *threaduser(void *something) {
 	while (1) {
-		if (head != NULL) {
+		pthread_mutex_lock(&lock_user);
+		if (userhead != NULL) {
 			struct Node *temp;
-			temp = head;
+			temp = userhead;
 			while (temp != NULL) {
 				struct utmpx *up;
 				setutxent();			/* start at beginning */
 				int found = 0;
-				pthread_mutex_lock(&lock_user);
 				while (up = getutxent())	/* get an entry */
 				{
 					if ( up->ut_type == USER_PROCESS )	/* only care about users */
@@ -149,7 +226,7 @@ void *threaduser(void *something) {
 							}
 						} else {
 							if (strcmp(temp->name,up->ut_user) == 0) {
-								printf("%s has logged on %s from %s\n",up->ut_user,up->ut_line,up ->ut_host);
+								printf("\n%s has logged on %s from %s\n",up->ut_user,up->ut_line,up ->ut_host);
 								temp->tty = (char *) malloc(strlen(up->ut_line) + 1);
 								strcpy(temp->tty, up->ut_line);
 								temp->host = (char *) malloc(strlen(up->ut_host) + 1);
@@ -162,49 +239,76 @@ void *threaduser(void *something) {
 					}
 				}
 				if (temp->on && !found) {
-					printf("%s has logged off %s from %s\n",temp->name,temp->tty,temp->host);
+					printf("\n%s has logged off %s from %s\n",temp->name,temp->tty,temp->host);
 					free(temp->tty);
 					temp->tty = NULL;
 					free(temp->host);
 					temp->host = NULL;
 					temp->on = 0;
 				}
-				pthread_mutex_unlock(&lock_user);
 				temp = temp->next;
 			}
-
+			pthread_mutex_unlock(&lock_user);
 		}
 		sleep(2);
 	}
 	return NULL;
 }
 
-int watchmail(char *file) {
-	nthreads = malloc(sizeof(int));
-	*nthreads = 2;
-	result_mail = malloc(sizeof(long int));
-	*result_mail = 0;
-	void *nothing;
+int watchmail(char *file, int off) {
 
 	pthread_mutex_init(&lock_mail, NULL);
-
-	pthread_t *threads = (pthread_t *) malloc(*nthreads *sizeof(pthread_t));
-	for (long int tid = 0; tid < *nthreads; tid++) {
-		pthread_create(&threads[tid], NULL, threadmail, (void *)tid);
-	} for (int tid = 0; tid < *nthreads; tid++) {
-		pthread_join(threads[tid], &nothing);
+	if (strcmp(file,"exit") == 0) {
+		struct Node *temp = mailhead;
+		while (temp != NULL) {
+			if (pthread_cancel(temp->id)!= 0) {
+				perror("pthread_cancel() error");
+			}
+			if (pthread_join(temp->id, NULL) != 0) {                                          
+				perror("pthread_join() error");                                             
+				exit(4);                                                                    
+			}
+			temp = temp->next;
+		}
+		freeList("mail");
+		return 0;
 	}
-	free(threads);
-	free(result_mail);
-	free(nthreads);
+	if (access(file, X_OK) != 0) {
+		perror("File not found.");
+	} else if (off) {
+		delete(file, "mail");
+	} else {
+		/* Checks to see if name is already in list */
+		struct Node *temp = mailhead;
+		int unique = 1;
+		while (temp != NULL) {
+			if (strcmp(file,temp->name) == 0) {
+				unique = 0;
+				break;
+			}
+			temp = temp->next;
+		}
+		/* If it is a new name, inserts the appropriate node */
+		if (unique) {
+			pthread_t id;
+			insert(file, id, "mail");
+			if (pthread_create(&id, NULL, threadmail, (void *)file) != 0) { 
+				perror("pthread_create() error");                                           
+				exit(1);                                                                    
+			}
+		}
+	}
 	return 0;
 }
 
 void *threadmail(void *something) {
-	int local_result = 420;
-
 	pthread_mutex_lock(&lock_mail);
-	*result_mail = local_result;
+	int i = 0;
+	while (i < 10) {
+		printf("WHY. ARE YOU. RUNNING\n");
+		i++;
+		sleep(1);
+	}
 	pthread_mutex_unlock(&lock_mail);
 	return NULL;
 }
