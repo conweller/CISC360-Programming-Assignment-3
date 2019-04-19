@@ -185,13 +185,6 @@ label:
         chdir(args[1]);
       }
     }
-    else if (strcmp(args[0], "red") == 0) {
-      char ** cmd = malloc(2*sizeof (char*));
-      cmd[0] = "cp";
-      cmd[1] = ".";
-      redirect(cmd,  "test", REDIR_AP|REDIR_ER);
-      free(cmd);
-    } 
     else if (strcmp(args[0], "pid") == 0) {
       printf("PID = %d\n", getpid());
     } else if (strcmp(args[0], "exit") == 0) { // Free everything and exit
